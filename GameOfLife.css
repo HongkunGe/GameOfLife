@@ -1,0 +1,14 @@
+#gridTable { 
+
+	width: 500px;
+	height: 500px; 
+	border-collapse: collapse; 
+}
+#gridTable td { 
+	border: 1px solid #ccc; 
+}
+.posChosen {
+	background: #9400D3;
+}
+
+
