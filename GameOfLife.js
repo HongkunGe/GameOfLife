@@ -1,10 +1,20 @@
 
 // Variable Setup
 var cols = 20,
-    rows = 20,
-    stopSignal;
-    delay = 100;
+    rows = 20;
+
+var stopSignal,
+    stopped = false,
+    stepAgain = false,
     alive = [];
+
+var delay = 100,
+    mode = "dead",
+    longliness = 2,
+    overpopulation = 3,
+    radius = 1,
+    generationMin = 3,
+    generationMax = 3;
 
 
 var buildGrid = function(row, col){
@@ -45,39 +55,51 @@ var reBuildGrid = function (){
 	}
 }
 
-var liveNumAllDead = function(i, j, mode){
-	var alive_point = 0;
-	if(mode == "dead") alive_point = 0;
-	else if(mode == "live") alive_point = 1;
+var liveNumAllDead = function(i, j){
 	var live_num = 0;
-	// console.log("i=", i, "j=", j);
-	//if(0 <= i - 1 && i + 1 < rows && 0 <= j - 1 && j + 1 <= cols){
-		live_num =     ((alive[i - 1] != undefined && alive[i - 1][j - 1] != undefined ) ? alive[i - 1][j - 1] : alive_point )
-					 + ((alive[i - 1] != undefined ) ? alive[i - 1][j] : alive_point)
-					 + ((alive[i - 1] != undefined  && alive[i - 1][j + 1] != undefined ) ? alive[i - 1][j + 1]  : alive_point )
-					 + ((alive[i][j - 1] != undefined ) ? alive[i][j - 1] : alive_point )
-					 + ((alive[i][j + 1] != undefined ) ? alive[i][j + 1] : alive_point )
-					 + ((alive[i + 1] != undefined  && alive[i + 1][j - 1] != undefined ) ? alive[i + 1][j - 1] : alive_point )
-					 + ((alive[i + 1] != undefined ) ? alive[i + 1][j] : alive_point )
-					 + ((alive[i + 1] != undefined  && alive[i + 1][j + 1] != undefined ) ? alive[i + 1][j + 1] : alive_point);
+	if(mode == "dead" || mode == "live"){
+		var alive_point = 0;
+		if(mode == "dead") alive_point = 0;
+		else if(mode == "live") alive_point = 1;
+		
+		// console.log("i=", i, "j=", j);
+		//if(0 <= i - 1 && i + 1 < rows && 0 <= j - 1 && j + 1 <= cols){
+			live_num =     ((alive[i - 1] != undefined && alive[i - 1][j - 1] != undefined ) ? alive[i - 1][j - 1] : alive_point )
+						 + ((alive[i - 1] != undefined ) ? alive[i - 1][j] : alive_point)
+						 + ((alive[i - 1] != undefined && alive[i - 1][j + 1] != undefined ) ? alive[i - 1][j + 1]  : alive_point )
+						 + ((alive[i][j - 1] != undefined ) ? alive[i][j - 1] : alive_point )
+						 + ((alive[i][j + 1] != undefined ) ? alive[i][j + 1] : alive_point )
+						 + ((alive[i + 1] != undefined && alive[i + 1][j - 1] != undefined ) ? alive[i + 1][j - 1] : alive_point )
+						 + ((alive[i + 1] != undefined ) ? alive[i + 1][j] : alive_point )
+						 + ((alive[i + 1] != undefined && alive[i + 1][j + 1] != undefined ) ? alive[i + 1][j + 1] : alive_point);		
+	}else if(mode == "toroidal"){
+			live_num =     ((alive[i - 1] != undefined && alive[i - 1][j - 1] != undefined ) ? alive[i - 1][j - 1] : (i != 0) ? alive[i - 1][cols - 1] : (j != 0) ? alive[rows - 1][j - 1] : alive[rows - 1][cols - 1])
+						 + ((alive[i - 1] != undefined) ? alive[i - 1][j] : alive[rows - 1][j])
+						 + ((alive[i - 1] != undefined && alive[i - 1][j + 1] != undefined ) ? alive[i - 1][j + 1] : (i != 0) ? alive[i - 1][0] : (j != cols - 1) ? alive[rows - 1][j + 1] : alive[rows - 1][0])
+						 + ((alive[i][j - 1] != undefined) ? alive[i][j - 1] : alive[i][cols - 1] )
+						 + ((alive[i][j + 1] != undefined) ? alive[i][j + 1] : alive[i][0] )
+						 + ((alive[i + 1] != undefined && alive[i + 1][j - 1] != undefined ) ? alive[i + 1][j - 1] : (i != rows - 1) ? alive[i + 1][cols - 1] : (j != 0) ? alive[0][j - 1] : alive[0][cols - 1])
+						 + ((alive[i + 1] != undefined) ? alive[i + 1][j] : alive[0][j] )
+						 + ((alive[i + 1] != undefined && alive[i + 1][j + 1] != undefined ) ? alive[i + 1][j + 1] : (i != rows - 1) ? alive[i + 1][0] : (j != cols - 1) ? alive[0][j + 1] : alive[0][0]);								
+	}
+
 	return live_num;
 }
 
 
 var oneIteration = function(){
 	// one iteration
-	// TODO: toroidal
-	var mode = "dead";
+	// console.log(mode);
 	for(var i = 0; i < rows; i ++){
 		for(var j = 0; j < cols; j ++){
-			var live_num = liveNumAllDead(i, j, mode);
+			var live_num = liveNumAllDead(i, j);
 			// if alive is 1, it must be a live class.
 			// 
 			if(alive[i][j] == 1){
-				if(live_num <= 1){
+				if(live_num < longliness){
 					// loneliness
 					$("#" + (i * rows + j) + "").removeClass("live").addClass("dead");
-				}else if(live_num <= 3){
+				}else if(live_num <= overpopulation){
 					// remain live;
 					continue;
 				}else{
@@ -123,10 +145,11 @@ var randomAlive = function(){
 	}
 }
 
-var oneStep = function(){
+var nextStep = function(){
 	oneIteration();
-	stopSignal = setTimeout(oneStep, delay);
+	stopSignal = setTimeout(nextStep, delay);
 }
+
 $(function() {
 	
 	// Build the Grid initially.  
@@ -173,13 +196,36 @@ $(function() {
 		randomAlive();
 	});
 	$("#reset").click(resetOp);
+
 	$("#start").click(function(){
-		stopSignal = setTimeout(oneStep, delay);
+		stopped = false;
+		stepAgain = false;
+		stopSignal = setTimeout(nextStep, delay);
+
 	});
 	
-	$("#stop").click(function(){
-		clearTimeout(stopSignal);
+	/* stopped is for the first step regulation. 
+	   stepAgain is for continous step regulation.
+	   When (and only when) the automaton is stopped, the user should be provided with a way to advance the automaton by one step. */
+	$("#step").click(function(){
+		if(stopped || stepAgain){
+			oneIteration();
+			stopped = false;
+			stepAgain = true;
+		}
 	});
 
+	$("#stop").click(function(){
+		clearTimeout(stopSignal);
+		stopped = true;
+		stepAgain = false;
+	});
+
+	$("div#mode select").change(function(){
+		mode = $(this).val();
+	});
+
+	// parameter of overpopulation, longliness, radius, generationMax and generationMin.
+	
 });
 
