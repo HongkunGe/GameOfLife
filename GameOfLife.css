@@ -7,8 +7,15 @@
 #gridTable td { 
 	border: 1px solid #ccc; 
 }
-.posChosen {
-	background: #9400D3;
+.initial {
+	background: #FFFFFF;
 }
 
 
+.dead{
+	background: #8099E6;
+}
+
+.live{
+	background: #0029A3;
+}
