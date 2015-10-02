@@ -13,6 +13,7 @@ var delay = 100,
     longliness = 2,
     overpopulation = 3,
     radius = 1,
+    upperbound = 4 * radius * radius + 4 * radius;
     generationMin = 3,
     generationMax = 3;
 
@@ -276,10 +277,31 @@ $(function() {
 		longliness and generationMin are choosen first, then overpopulation and generationMax
 		have limited lowerbound.
 	   */
+	$("div#bound span#upper").text(upperbound);
 	$("#radius").change(function(){
 		radius = $(this).val();
+		upperbound = parseInt(radius) * parseInt(radius) * 4 + parseInt(radius) * 4;
+		$("div#bound span#upper").text(upperbound);
 	});
 
-	
+	$("div#bound span#lowerOverPop").text(longliness);
+	$("#lonely").change(function(){
+		longliness = $(this).val();
+		$("div#bound span#lowerOverPop").text(longliness);
+	});
+
+	$("#overPop").change(function(){
+		overpopulation = $(this).val();
+	});
+
+	$("div#bound span#lowerGMax").text(generationMin);
+	$("#gMin").change(function(){
+		generationMin = $(this).val();
+		$("div#bound span#lowerGMax").text(generationMin);
+	});
+
+	$("#gMax").change(function(){
+		generationMax = $(this).val();
+	});
 });
 
