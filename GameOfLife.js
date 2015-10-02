@@ -4,8 +4,6 @@ var cols = 20,
     rows = 20;
 
 var stopSignal,
-    stopped = true,
-    stepAgain = false,
     alive = [];
 
 var delay = 100,
@@ -245,8 +243,8 @@ $(function() {
 	});
 
 	$("#start").click(function(){
-		stopped = false;
-		stepAgain = false;
+		$(this).attr("disabled", true);
+		$("#step").attr("disabled", true);
 		stopSignal = setTimeout(nextStep, delay);
 
 	});
@@ -255,17 +253,13 @@ $(function() {
 	   stepAgain is for continous step regulation.
 	   When (and only when) the automaton is stopped, the user should be provided with a way to advance the automaton by one step. */
 	$("#step").click(function(){
-		if(stopped || stepAgain){
-			oneIteration();
-			stopped = false;
-			stepAgain = true;
-		}
+		oneIteration();
 	});
 
 	$("#stop").click(function(){
 		clearTimeout(stopSignal);
-		stopped = true;
-		stepAgain = false;
+		$("#start").attr("disabled", false);
+		$("#step").attr("disabled", false);
 	});
 
 	$("div#mode select").change(function(){
