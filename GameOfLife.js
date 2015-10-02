@@ -4,7 +4,7 @@ var cols = 20,
     rows = 20;
 
 var stopSignal,
-    stopped = false,
+    stopped = true,
     stepAgain = false,
     alive = [];
 
@@ -55,7 +55,7 @@ var reBuildGrid = function (){
 	}
 }
 
-var liveNumAllDead = function(i, j){
+var liveNumAllDeadWithDefaultRadius = function(i, j){
 	var live_num = 0;
 	if(mode == "dead" || mode == "live"){
 		var alive_point = 0;
@@ -86,13 +86,57 @@ var liveNumAllDead = function(i, j){
 	return live_num;
 }
 
-
+var outIndex = function(a, b){
+	var ta, tb;
+	if(0 <= a && a < rows && 0 <= b && b < cols){
+		ta = a; 
+		tb = b;
+	}else{
+		if(0 <= a && a < rows){
+			ta = a;
+		}else{
+			if(a < 0){
+				ta = parseInt(rows) + parseInt(a);
+			}else if(a >= rows){
+				ta = parseInt(a) - parseInt(rows);
+			}
+		}
+		if(0 <= b && b < cols){
+			tb = b;
+		}else{
+			if(b < 0){
+				tb = parseInt(cols) + parseInt(b);
+			}else if(b >= cols){
+				tb = parseInt(b) - parseInt(cols);
+			}
+		}
+	}
+	return [ta, tb];
+}
+var liveNum = function(i, j){
+	var live_num = 0;
+	if(mode == "dead") alive_point = 0;
+	else if(mode == "live") alive_point = 1;
+	for(var pr = -radius; pr <= radius; pr ++){
+		for(var pc = -radius; pc <= radius; pc ++){
+			if(pr == 0 && pc == 0) continue;
+			if(mode == "dead" || mode == "live"){
+				live_num += ((0 <= i + pr && i + pr < rows && 0 <= j + pc && j + pc < cols) ? alive[i + pr][j + pc] : alive_point );
+			}else if(mode == "toroidal"){
+				var nidx = outIndex(i + pr, j + pc);
+				live_num += alive[nidx[0]][nidx[1]];
+			}
+			
+		}
+	}
+	return live_num;
+}
 var oneIteration = function(){
 	// one iteration
 	// console.log(mode);
 	for(var i = 0; i < rows; i ++){
 		for(var j = 0; j < cols; j ++){
-			var live_num = liveNumAllDead(i, j);
+			var live_num = liveNum(i, j);
 			// if alive is 1, it must be a live class.
 			// 
 			if(alive[i][j] == 1){
@@ -130,9 +174,7 @@ var oneIteration = function(){
 		}
 	}	
 }
-var resetOp = function(){
-	reBuildGrid();
-}
+
 
 var randomAlive = function(){
 	var total_num = rows * cols;
@@ -192,10 +234,14 @@ $(function() {
 	$("#random").click(function(){
 		//reBuildGrid();
 		clearInterval(stopSignal);
-		resetOp();
+		reBuildGrid();
 		randomAlive();
 	});
-	$("#reset").click(resetOp);
+
+	$("#reset").click(function(){
+		reBuildGrid();
+		clearTimeout(stopSignal);
+	});
 
 	$("#start").click(function(){
 		stopped = false;
@@ -226,6 +272,14 @@ $(function() {
 	});
 
 	// parameter of overpopulation, longliness, radius, generationMax and generationMin.
+	/* After updating raduis, overpopulation and generationMax are limited upperbound,
+		longliness and generationMin are choosen first, then overpopulation and generationMax
+		have limited lowerbound.
+	   */
+	$("#radius").change(function(){
+		radius = $(this).val();
+	});
+
 	
 });
 
