@@ -191,12 +191,19 @@ var nextStep = function(){
 	stopSignal = setTimeout(nextStep, delay);
 }
 
+var reset = function(){
+	clearInterval(stopSignal);
+	reBuildGrid();	
+}
 $(function() {
 	
 	// Build the Grid initially.  
 
 
 	buildGrid(rows, cols);
+	randomAlive();
+	$("#start").trigger("click");
+
 
 	$("#sizeSlider").change(function() {
 		rows = $(this).val();
@@ -209,6 +216,10 @@ $(function() {
 	});
 	// click event for the table entry.
 	$("#gridTable").delegate("td", "click", function(event){
+		
+		$("#start").attr("disabled", false);
+		$("#step").attr("disabled", false);	
+
 		var click_r = Math.floor($(this).attr("id") / rows);
 		var click_c = $(this).attr("id") % rows;
 		if(event.ctrlKey){
@@ -232,14 +243,16 @@ $(function() {
 	// Start the game of life
 	$("#random").click(function(){
 		//reBuildGrid();
-		clearInterval(stopSignal);
-		reBuildGrid();
+		reset();
 		randomAlive();
+		$("#start").attr("disabled", false);
+		$("#step").attr("disabled", false);	
 	});
 
 	$("#reset").click(function(){
-		reBuildGrid();
-		clearTimeout(stopSignal);
+		reset();
+		$("#start").attr("disabled", true);
+		$("#step").attr("disabled", true);		
 	});
 
 	$("#start").click(function(){
@@ -271,27 +284,32 @@ $(function() {
 		longliness and generationMin are choosen first, then overpopulation and generationMax
 		have limited lowerbound.
 	   */
-	$("div#bound span#upper").text(upperbound);
+	$("div #upper").text(upperbound);
 	$("#radius").change(function(){
 		radius = $(this).val();
 		upperbound = parseInt(radius) * parseInt(radius) * 4 + parseInt(radius) * 4;
-		$("div#bound span#upper").text(upperbound);
+		$("div #upper").text(upperbound);
+		$("#lonely, #overPop, #gMin, #gMax").attr('max', upperbound);
+
 	});
 
-	$("div#bound span#lowerOverPop").text(longliness);
+	$("#lowerOverPop").text(longliness);
 	$("#lonely").change(function(){
 		longliness = $(this).val();
-		$("div#bound span#lowerOverPop").text(longliness);
+		$("#lowerOverPop").text(longliness);
+		$("#overPop").attr("min", longliness);
 	});
 
 	$("#overPop").change(function(){
 		overpopulation = $(this).val();
 	});
 
-	$("div#bound span#lowerGMax").text(generationMin);
+	$("#lowerGMax").text(generationMin);
 	$("#gMin").change(function(){
 		generationMin = $(this).val();
-		$("div#bound span#lowerGMax").text(generationMin);
+		$("#lowerGMax").text(generationMin);
+		$("#gMax").attr("min", generationMin);
+
 	});
 
 	$("#gMax").change(function(){
