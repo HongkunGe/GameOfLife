@@ -202,21 +202,34 @@ $(function() {
 
 	buildGrid(rows, cols);
 	randomAlive();
-	$("#start").trigger("click");
+	
 
 
-	$("#sizeSlider").change(function() {
-		rows = $(this).val();
-		cols = $(this).val();
-		buildGrid(rows, cols);
+	$("#sizeSlider").slider({
+		formatter: function(value) {
+			rows = value;
+			cols = value;
+			buildGrid(rows, cols);
+			return 'Current value: ' + value;
+		}
+	}).change(function() {
+		
+		// rows = $(this).val();
+		// cols = $(this).val();
+		// buildGrid(rows, cols);
 	});
 
 	$("#speedSlider").change(function() {
-		delay = Math.floor(1000 / $(this).val());
+		// delay = Math.floor(1000 / $(this).val());
+	}).slider({
+		formatter: function(value) {
+			delay = Math.floor(1000 / value);
+			return 'Current value: ' + value;
+		}
 	});
 	// click event for the table entry.
 	$("#gridTable").delegate("td", "click", function(event){
-		
+
 		$("#start").attr("disabled", false);
 		$("#step").attr("disabled", false);	
 
@@ -261,7 +274,9 @@ $(function() {
 		stopSignal = setTimeout(nextStep, delay);
 
 	});
-	
+
+	$("button#start").trigger("click");
+
 	/* stopped is for the first step regulation. 
 	   stepAgain is for continous step regulation.
 	   When (and only when) the automaton is stopped, the user should be provided with a way to advance the automaton by one step. */
@@ -284,14 +299,26 @@ $(function() {
 		longliness and generationMin are choosen first, then overpopulation and generationMax
 		have limited lowerbound.
 	   */
+
 	$("div #upper").text(upperbound);
 	$("#radius").change(function(){
-		radius = $(this).val();
-		upperbound = parseInt(radius) * parseInt(radius) * 4 + parseInt(radius) * 4;
-		$("div #upper").text(upperbound);
-		$("#lonely, #overPop, #gMin, #gMax").attr('max', upperbound);
+		// radius = $(this).val();
+		// upperbound = parseInt(radius) * parseInt(radius) * 4 + parseInt(radius) * 4;
+		// $("div #upper").text(upperbound);
+		// $("#lonely, #overPop, #gMin, #gMax").attr('max', upperbound);
 
+	}).slider(
+		{ 
+			formatter: function(value) {
+			radius = value;
+			upperbound = parseInt(radius) * parseInt(radius) * 4 + parseInt(radius) * 4;
+			$("div #upper").text(upperbound);
+			$("#lonely, #overPop, #gMin, #gMax").attr('max', upperbound);				
+			return 'Current value: ' + value;
+		}
 	});
+
+
 
 	$("#lowerOverPop").text(longliness);
 	$("#lonely").change(function(){
@@ -315,5 +342,17 @@ $(function() {
 	$("#gMax").change(function(){
 		generationMax = $(this).val();
 	});
+
+		$("div button#more").click(function(){
+			if($(this).attr("name") == "moreSetting"){
+				$(this).text("Show less");
+				$("#moreSetting").show(500);
+				$(this).attr("name", "lessSetting");
+			}else{
+				$(this).text("Show more");
+				$("#moreSetting").hide(500);
+				$(this).attr("name", "moreSetting");				
+			}
+		});
 });
 
